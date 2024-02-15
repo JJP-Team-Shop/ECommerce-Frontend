@@ -33,7 +33,7 @@ const LoginForm = () => {
       {isLoading && <p>Loading...</p>}
 
       <form onSubmit={loginForm} className="form">
-          <h1>Log into BookBuddy</h1>
+          <h1>Log into JJP Store</h1>
           <div>
             <input
               type="email"
