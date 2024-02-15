@@ -1,5 +1,6 @@
 import "./App.css";
 import { Routes, Route } from "react-router-dom";
+import { CssBaseline } from "@mui/material";
 // import Account from "./components/Account";
 // import AdminDashboard from "./components/AdminDashboard";
 // import Cart from "./components/Cart";
@@ -15,6 +16,7 @@ import RegistrationForm from "./components/Register";
 function App() {
   return <>
   {/* <NavBar/> */}
+  <CssBaseline/>
   <div>
   <Routes>
         <Route path = "/" element = {<Products/>} />
