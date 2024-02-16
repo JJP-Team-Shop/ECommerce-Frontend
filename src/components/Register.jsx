@@ -15,20 +15,27 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {useRegisterUserMutation} from "../api/shopApi"
 
+
 const defaultTheme = createTheme({
   palette: {
     mode: "dark",
   },
 });
+
 export default function Register() {
   const navigate = useNavigate();
   const [addNewUser] = useRegisterUserMutation();
   const [formData, setFormData] = useState({
-    firstname: "",
-    lastname: "",
+
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
+    address: "",
+    isAdmin: false,
   });
+
+
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData((prevData) => ({
@@ -36,27 +43,32 @@ export default function Register() {
       [name]: value,
     }));
   };
+
+
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
       const response = await addNewUser(formData);
-      if (response.data && response.data.token) {
-        const token = response.data.token;
-        localStorage.setItem("authToken", token);
+
+      if (response.data) {
         console.log(
-          "User registration successful. Token saved to local storage:",
-          token
+          "User registration successful."
         );
-        navigate("/users/login");
+        navigate("/login");
       } else {
         console.error(
-          "User registration failed: Invalid response or missing token"
+          "User registration failed"
+
         );
       }
     } catch (error) {
       console.error("User registration failed:", error);
     }
   };
+
+
+
   return (
     <ThemeProvider theme={defaultTheme}>
       <Container component="main" maxWidth="xs">
@@ -75,23 +87,22 @@ export default function Register() {
           <Typography component="h1" variant="h5">
             Sign up
           </Typography>
-          <Box
-            component="form"
-            noValidate
-            onSubmit={handleSubmit}
-            sx={{ mt: 3 }}
-          >
+
+          <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
+
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
                 <TextField
                   autoComplete="given-name"
-                  name="firstname"
+
+                  name="firstName"
                   required
                   fullWidth
-                  id="firstname"
+                  id="firstName"
                   label="First Name"
                   autoFocus
-                  value={formData.firstname}
+                  value={formData.firstName}
+
                   onChange={handleChange}
                 />
               </Grid>
@@ -99,11 +110,25 @@ export default function Register() {
                 <TextField
                   required
                   fullWidth
-                  id="lastname"
+
+                  id="lastName"
                   label="Last Name"
-                  name="lastname"
+                  name="lastName"
                   autoComplete="family-name"
-                  value={formData.lastname}
+                  value={formData.lastName}
+                  onChange={handleChange}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  required
+                  fullWidth
+                  id="address"
+                  label="Address"
+                  name="address"
+                  autoComplete="address"
+                  value={formData.address}
+
                   onChange={handleChange}
                 />
               </Grid>
@@ -134,9 +159,9 @@ export default function Register() {
               </Grid>
               <Grid item xs={12}>
                 <FormControlLabel
-                  control={
-                    <Checkbox value="allowExtraEmails" color="primary" />
-                  }
+
+                  control={<Checkbox value="allowExtraEmails" color="primary" />}
+
                   label="I want to receive inspiration, marketing promotions and updates via email."
                 />
               </Grid>

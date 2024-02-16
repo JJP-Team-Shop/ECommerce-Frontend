@@ -11,7 +11,7 @@ const Navbar = () => {
     <AppBar   position="static" sx={{backgroundColor: "black"}}>
       <Toolbar>
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          JPP Store
+          JJP Store
         </Typography>
         <Button color="inherit" component={Link} to="/">
           Home
@@ -22,11 +22,14 @@ const Navbar = () => {
         <Button color="inherit" component={Link} to="/Register">
           Register
         </Button>
-        {token && (
+        <Button color="inherit" component={Link} to="/Cart">
+          Cart
+        </Button>
+        
           <Button color="inherit" component={Link} to="/Account">
           Account
         </Button>
-        )}
+        
         
       </Toolbar>
     </AppBar>
