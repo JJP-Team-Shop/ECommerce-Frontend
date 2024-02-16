@@ -16,7 +16,7 @@ const StyledButton = ({ children, to, onClick }) => {
             },
             "&.Mui-selected": {
               backgroundColor: "rgba(255, 255, 255, 0.16)",
-            },
+            },         
           }}
         >
           {children}
@@ -35,7 +35,7 @@ const StyledButton = ({ children, to, onClick }) => {
             backgroundColor: "rgba(255, 255, 255, 0.08)",
           },
           "&.Mui-selected": {
-            backgroundColor: "rgba(255, 255, 255, 0.16)",
+            backgroundColor: "rgba(255, 255, 255, 0.16)",          
           },
         }}
       >
