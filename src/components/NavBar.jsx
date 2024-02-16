@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux';
 const Navbar = () => {
   const { token } = useSelector((state) => state.user);
   return (
-    <AppBar position="static">
+    <AppBar   position="static" sx={{backgroundColor: "black"}}>
       <Toolbar>
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
           JJP Store

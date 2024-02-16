@@ -13,7 +13,8 @@ import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useRegisterUserMutation } from "../api/shopApi";
+import {useRegisterUserMutation} from "../api/shopApi"
+
 
 const defaultTheme = createTheme({
   palette: {
@@ -25,6 +26,7 @@ export default function Register() {
   const navigate = useNavigate();
   const [addNewUser] = useRegisterUserMutation();
   const [formData, setFormData] = useState({
+
     firstName: "",
     lastName: "",
     email: "",
@@ -32,6 +34,7 @@ export default function Register() {
     address: "",
     isAdmin: false,
   });
+
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -41,10 +44,13 @@ export default function Register() {
     }));
   };
 
+
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
       const response = await addNewUser(formData);
+
       if (response.data) {
         console.log(
           "User registration successful."
@@ -53,12 +59,15 @@ export default function Register() {
       } else {
         console.error(
           "User registration failed"
+
         );
       }
     } catch (error) {
       console.error("User registration failed:", error);
     }
   };
+
+
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -78,11 +87,14 @@ export default function Register() {
           <Typography component="h1" variant="h5">
             Sign up
           </Typography>
+
           <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
+
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
                 <TextField
                   autoComplete="given-name"
+
                   name="firstName"
                   required
                   fullWidth
@@ -90,6 +102,7 @@ export default function Register() {
                   label="First Name"
                   autoFocus
                   value={formData.firstName}
+
                   onChange={handleChange}
                 />
               </Grid>
@@ -97,6 +110,7 @@ export default function Register() {
                 <TextField
                   required
                   fullWidth
+
                   id="lastName"
                   label="Last Name"
                   name="lastName"
@@ -114,6 +128,7 @@ export default function Register() {
                   name="address"
                   autoComplete="address"
                   value={formData.address}
+
                   onChange={handleChange}
                 />
               </Grid>
@@ -144,7 +159,9 @@ export default function Register() {
               </Grid>
               <Grid item xs={12}>
                 <FormControlLabel
+
                   control={<Checkbox value="allowExtraEmails" color="primary" />}
+
                   label="I want to receive inspiration, marketing promotions and updates via email."
                 />
               </Grid>
