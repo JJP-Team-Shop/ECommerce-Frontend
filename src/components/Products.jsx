@@ -1,3 +1,4 @@
+
 import { useGetProductsQuery, useCreateCartItemMutation, useCreateCartMutation, useDeleteCartMutation, useGetCartsQuery } from "../api/shopApi";
 import {  useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -76,6 +77,7 @@ const Getallproducts = () => {
     createNewCart();
   }, [createCart]);
  
+
   const handleAddToCart = async (productId) => {
     if (isUserLoggedIn()) {
       try {
@@ -100,8 +102,11 @@ const Getallproducts = () => {
       localStorage.setItem('cart', JSON.stringify(cart));
       setSnackbarMessage("Product added to Cart successfully!");
       setOpenSnackbar(true);
+
     }
+
   };
+
     if (isLoading || isCreatingCartItem) {
       return <div>Loading...</div>;
     }
@@ -109,9 +114,11 @@ const Getallproducts = () => {
       return <div>Error fetching products: {error.message}</div>;
     }
 
+
   const featuredProduct = data[0];
   
   return (
+
     <div className="product-page-container">
     <div className="list-container">
       <VirtualizedList className="virtualized-list"/>
@@ -122,21 +129,26 @@ const Getallproducts = () => {
         <Card className="featured-card">
           <CardContent>
             <h4>Featured Product Of The Day!</h4>
+
             <img
               className="product-img"
               src={featuredProduct.image}
               alt={featuredProduct.productName}
             />
+
             <h4>{"Price: $" + featuredProduct.price}</h4>
             <Link to={`/products/${featuredProduct.id}`}>
               <StyledButton>Product Details</StyledButton>
             </Link>
+
             <StyledButton onClick={() => handleAddToCart(featuredProduct.id)}>
+
               Add to Cart
             </StyledButton>
             
           </CardContent>
         </Card>
+
       </div>
 
       
@@ -174,9 +186,12 @@ const Getallproducts = () => {
       />
       </div>
     </div>
+
     </div>
   );
 };
 
 export default Getallproducts;
+
+
 
