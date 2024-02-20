@@ -166,7 +166,7 @@ const Getallproducts = () => {
               <Link to={`/products/${product.id}`}>
                 <StyledButton>Product Details</StyledButton>
               </Link>
-              <StyledButton onClick={() => handleAddtoCart(product.id)}>
+              <StyledButton onClick={() => handleAddToCart(product.id)}>
                 Add to Cart
               </StyledButton>
              

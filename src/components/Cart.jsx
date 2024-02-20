@@ -78,6 +78,7 @@ const Cart = () => {
       </Typography>
       {cartItems?.length > 0 ? (
         cartItems.map((item) => (
+          
           <Card key={item.id} style={{ marginBottom: "10px" }}>
             <CardContent>
               <Typography variant="h5">{item.product?.productName}</Typography>
