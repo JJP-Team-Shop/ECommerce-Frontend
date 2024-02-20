@@ -3,7 +3,7 @@ import { useGetProductsQuery, useCreateCartItemMutation, useCreateCartMutation, 
 import {  useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import StyledButton from "../design/StyledButton";
-import { Card } from "@mui/material";
+import { Card, Snackbar, Button } from "@mui/material";
 import CardContent from "@mui/material/CardContent";
 import VirtualizedList from "../design/list";
 import { jwtDecode } from "jwt-decode";
@@ -11,11 +11,22 @@ import { jwtDecode } from "jwt-decode";
 
 const Getallproducts = () => {
   const { data, isLoading, isError, error } = useGetProductsQuery();
-  const [createCartItem] = useCreateCartItemMutation([]);
   const [createCart] = useCreateCartMutation();
   const { data: carts } = useGetCartsQuery();
   const [deleteCart] = useDeleteCartMutation();
   const [authToken, setAuthToken] = useState(localStorage.getItem("authToken"));
+  const [
+    createCartItem,
+    { isLoading: isCreatingCartItem, error: createCartItemError },
+  ] = useCreateCartItemMutation();
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
+  };
+  const isUserLoggedIn = () => {
+    return Boolean(localStorage.getItem('authToken')); 
+  };
 
   useEffect(() => {
    
@@ -66,29 +77,43 @@ const Getallproducts = () => {
     createNewCart();
   }, [createCart]);
  
-  const handleAddtoCart = async (productId) => {
 
-    try {
-      // Call your createCartItem mutation with the productId
-      await createCartItem({ productId, quantity: 1 }).unwrap();
+  const handleAddToCart = async (productId) => {
+    if (isUserLoggedIn()) {
+      try {
+        // Call your createCartItem mutation with the productId
+        await createCartItem({ productId, quantity: 1 }).unwrap();
+        setSnackbarMessage("Product added to Cart successfully!");
+        setOpenSnackbar(true);
+      } catch (err) {
+        console.error("Failed to add product to cart", err);
+        setSnackbarMessage("Failed to add product to cart");
+        setOpenSnackbar(true);
+      }
+    } else {
+      // Guest user logic
+      let cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const itemIndex = cart.findIndex(item => item.productId === productId);
+      if (itemIndex > -1) {
+        cart[itemIndex].quantity += 1; // Increment quantity if product exists
+      } else {
+        cart.push({ productId, quantity: 1 }); // Add new item to cart
+      }
+      localStorage.setItem('cart', JSON.stringify(cart));
       setSnackbarMessage("Product added to Cart successfully!");
       setOpenSnackbar(true);
-    } catch (err) {
-      console.error("Failed to add product to cart", err);
-      setSnackbarMessage("Failed to add product to cart");
-      setOpenSnackbar(true);
+
     }
 
   };
 
-  if (isLoading) {
+    if (isLoading || isCreatingCartItem) {
+      return <div>Loading...</div>;
+    }
+    if (isError) {
+      return <div>Error fetching products: {error.message}</div>;
+    }
 
-    return <div>Loading...</div>;
-  }
-
-  if (isError) {
-    return <div>Error fetching products: {error.message}</div>;
-  }
 
   const featuredProduct = data[0];
   
@@ -115,7 +140,8 @@ const Getallproducts = () => {
             <Link to={`/products/${featuredProduct.id}`}>
               <StyledButton>Product Details</StyledButton>
             </Link>
-            <StyledButton onClick={() => handleAddtoCart(featuredProduct.id)}>
+
+            <StyledButton onClick={() => handleAddToCart(featuredProduct.id)}>
 
               Add to Cart
             </StyledButton>
@@ -147,6 +173,17 @@ const Getallproducts = () => {
             </CardContent>
           </Card>
         ))}
+         <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        message={snackbarMessage}
+        action={
+          <Button color="secondary" size="small" onClick={handleCloseSnackbar}>
+            UNDO
+          </Button>
+        }
+      />
       </div>
     </div>
 
