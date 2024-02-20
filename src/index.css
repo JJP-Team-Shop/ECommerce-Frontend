@@ -17,7 +17,7 @@ body {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   min-width: 100vw;
   min-height: 100vh;
-  background-image: url('https://static.clubs.nfl.com/image/upload/t_new_photo_album/f_auto/ravens/nguetffumls3sz3ewz6o.jpg');
+  background-image: url('https://i.pinimg.com/originals/d5/f7/32/d5f732c67ed407bb98a6da31345d5365.jpg');
   background-size: cover; /* Ensures the image covers the entire viewport */
   background-repeat: no-repeat; /* Prevents the image from repeating */
   background-position: center; /* Centers the image */
@@ -42,6 +42,15 @@ body {
   
   width: 40%;
 }
+
+.single-product{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+ height: 60%;
+}
+
 .product-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr); 
@@ -49,9 +58,12 @@ body {
 }
 .product-card {
   width: 250px;
+  display: flex;
 }
 .product-img {
   height: 150px;
+  align-items: center;
+  justify-content: center;
 }
 
 .virtualized-list{
@@ -71,8 +83,27 @@ body {
   min-height: 100vh;
 }
 
+.single-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 80%;
+  margin: auto;
+}
 
+.single-product-info {
+  text-align: center; /* Center align the product information */
+}
 
+.single-product-img {
+  height: 300px;
+  width: auto;
+  margin-bottom: 20px;
+}
+
+.button-container {
+  margin-top: 20px; /* Add some space between the product information and the button */
+}
 
 
 @media (max-width: 768px) {

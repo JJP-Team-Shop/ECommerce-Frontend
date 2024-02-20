@@ -4,13 +4,13 @@ export const shopApi = createApi({
   reducerPath: "shopApi",
   baseQuery: fetchBaseQuery({
     baseUrl: "http://localhost:3000",
-    // prepareHeaders: (headers) => {
-    //   const token = localStorage.getItem("authToken");
-    //   if (token) {
-    //     headers.set("Authorization", `Bearer ${token}`);
-    //   }
-    //   return headers;
-    // },
+    prepareHeaders: (headers) => {
+      const token = localStorage.getItem("authToken");
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+      return headers;
+    },
   }),
 
   endpoints: (builder) => ({
@@ -55,9 +55,10 @@ export const shopApi = createApi({
       }),
     }),
     getUser: builder.query({
-      query: () => ({
+      query: (userData) => ({
         url: "/auth/me",
         method: "GET",
+        body: userData
       }),
     }),
     updateUser: builder.mutation({

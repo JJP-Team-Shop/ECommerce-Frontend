@@ -1,16 +1,70 @@
-import { useGetProductsQuery, useCreateCartItemMutation } from "../api/shopApi";
-// import { useState, useEffect } from "react";
+import { useGetProductsQuery, useCreateCartItemMutation, useCreateCartMutation, useDeleteCartMutation, useGetCartsQuery } from "../api/shopApi";
+import {  useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import StyledButton from "../design/StyledButton";
 import { Card } from "@mui/material";
 import CardContent from "@mui/material/CardContent";
-// import Typography from "@mui/material/Typography";
 import VirtualizedList from "../design/list";
+import { jwtDecode } from "jwt-decode";
+
 
 const Getallproducts = () => {
   const { data, isLoading, isError, error } = useGetProductsQuery();
   const [createCartItem] = useCreateCartItemMutation([]);
+  const [createCart] = useCreateCartMutation();
+  const { data: carts } = useGetCartsQuery();
+  const [deleteCart] = useDeleteCartMutation();
+  const [authToken, setAuthToken] = useState(localStorage.getItem("authToken"));
 
+  useEffect(() => {
+   
+    setAuthToken(localStorage.getItem("authToken"));
+  }, [localStorage.getItem("authToken")]);
+
+  useEffect(() => {
+    const deletePreviousGuestCarts = async () => {
+      try {
+      
+        const previousGuestCarts = carts.filter((cart) => cart.userId === null);
+       
+       
+        await Promise.all(previousGuestCarts.map((cart) => deleteCart(cart.id )));
+        
+        console.log("Previous guest carts deleted successfully!");
+      } catch (error) {
+        console.error("Failed to delete previous guest carts:", error);
+      }
+    };
+
+    deletePreviousGuestCarts();
+  }, [carts, deleteCart]);
+
+  useEffect(() => {
+    const createNewCart = async () => {
+      try {
+        let userId = 1;
+
+        if(authToken) {
+          const decodedToken = jwtDecode(authToken);
+          userId= decodedToken.id;
+          console.log(decodedToken.id)
+        }
+        console.log(userId)
+        const status = "active";
+        const totalAmount = 0.0;
+
+        await createCart({userId, status, totalAmount});
+
+        console.log("New cart created successfully!", );
+       
+      } catch (error) {
+        console.error("Failed to create new cart:", error);
+      }
+    };
+
+    createNewCart();
+  }, [createCart]);
+ 
   const handleAddtoCart = async (productId) => {
     try {
       await createCartItem({ productId });
@@ -19,7 +73,7 @@ const Getallproducts = () => {
       alert("Failed to add product to cart");
     }
   };
-  console.log("data:", data);
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -46,13 +100,14 @@ const Getallproducts = () => {
               src={featuredProduct.image}
               alt={featuredProduct.productName}
             />
+            <h4>{"Price: $" + featuredProduct.price}</h4>
             <Link to={`/products/${featuredProduct.id}`}>
               <StyledButton>Product Details</StyledButton>
             </Link>
             <StyledButton onClick={() => handleAddtoCart(featuredProduct.id)}>
               Add to Cart
             </StyledButton>
-            <h4>{"Price: $" + featuredProduct.price}</h4>
+            
           </CardContent>
         </Card>
       </div>
@@ -68,13 +123,14 @@ const Getallproducts = () => {
                 src={product.image}
                 alt={product.productName}
               />
+               <h4>{"Price: $" + product.price}</h4>
               <Link to={`/products/${product.id}`}>
                 <StyledButton>Product Details</StyledButton>
               </Link>
               <StyledButton onClick={() => handleAddtoCart(product.id)}>
                 Add to Cart
               </StyledButton>
-              <h4>{"Price: $" + product.price}</h4>
+             
             </CardContent>
           </Card>
         ))}

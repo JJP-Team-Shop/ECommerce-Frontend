@@ -11,39 +11,69 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { useLoginUserMutation } from "../api/shopApi";
+import { useLoginUserMutation, useCreateCartMutation } from "../api/shopApi";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 // import Account from "./Account";
 import StyledButton from "../design/StyledButton";
+import { jwtDecode } from "jwt-decode";
+
 const defaultTheme = createTheme({
   palette: {
     mode: "dark",
   },
 });
+const getUserIdFromToken = (token) => {
+  try {
+    const decodedToken = jwtDecode(token);
+    console.log(token)
+    if (decodedToken && decodedToken.id) {
+      return decodedToken.id;
+    } else {
+      throw new Error("Invalid token structure");
+    }
+  } catch (error) {
+    console.error("Error decoding token:", error);
+    return null;
+  }
+};
+
 export default function Login() {
   const navigate = useNavigate();
   const [loginUser] = useLoginUserMutation();
+  const [createCart] = useCreateCartMutation();
   const [authToken, setAuthToken] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
+
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData({ ...formData, [name]: value });
   };
-  const handleLoginSuccess = (token) => {
+  const handleLoginSuccess = async (token) => {
     localStorage.setItem("authToken", token);
     setAuthToken(token);
     setIsLoggedIn(true);
+
+//     try {
+//       const userId = 3; 
+//       const status = "active";
+//       const totalAmount = 0.0;
+// console.log(userId)
+//       const response = await createCart({userId, status, totalAmount});
+//       console.log("Cart created successfully:", response.data);
+//     } catch (error) {
+//       console.error("Failed to create cart:", error);
+//     }
   };
+  
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
       const response = await loginUser(formData);
       const token = response.data.token;
       handleLoginSuccess(token);
-      console.log(token)
     } catch (error) {
       console.error("Login failed:", error);
     }

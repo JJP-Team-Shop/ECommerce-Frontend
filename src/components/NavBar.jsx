@@ -3,12 +3,20 @@ import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import { useSelector } from 'react-redux';
-
+import { useSelector, useDispatch } from 'react-redux';
+import { LogoutUser } from '../slice/userSlice';
 const Navbar = () => {
   const { token } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+
+  const handleLogout = () => {
+    // Clear the token from localStorage and from the Redux store
+    localStorage.removeItem('authToken');
+    dispatch(LogoutUser());
+  };
+
   return (
-    <AppBar   position="static" sx={{backgroundColor: "black"}}>
+    <AppBar   position="static" sx={{ width: '80vw', margin: '0 auto', backgroundColor: "black"}}>
       <Toolbar>
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
           JJP Store
@@ -29,6 +37,10 @@ const Navbar = () => {
           <Button color="inherit" component={Link} to="/Account">
           Account
         </Button>
+
+        <Button color="inherit" onClick={handleLogout}>
+              Logout
+            </Button>
         
         
       </Toolbar>

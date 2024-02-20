@@ -1,32 +1,82 @@
 import { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { useUpdateUserMutation, useDeleteUserMutation, useGetUserQuery } from '../api/shopApi';
+// import { useSelector } from 'react-redux';
+// import { useNavigate } from 'react-router-dom';
+import { useParams } from "react-router-dom";
+import { useGetUserQuery, useDeleteUserMutation, useUpdateUserMutation } from "../api/shopApi";
+import { useDispatch } from "react-redux";
+import { useCallback } from "react";
+import { setUserInfo } from "../slice/userSlice";
+import { TextField } from '@mui/material';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Button from '@mui/material/Button';
-
 const Account = () => {
-  const { token, user } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+  const { userid } = useParams();
   const [userData, setUserData] = useState(null);
-  const { data, error, isLoading } = useGetUserQuery();
-  const [updateUser] = useUpdateUserMutation();
-  const [deleteUser] = useDeleteUserMutation();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (data) {
-      setUserData(data);
-    }
-  }, [data]);
-
-  const handleUpdateUser = async (updatedUserData) => {
+  const [deleteUserMutation] = useDeleteUserMutation();
+  const [updateUserMutation] = useUpdateUserMutation();
+  const getToken = useCallback(() => {
+    return localStorage.getItem("authToken");
+  }, []);
+  const fetchUserData = useCallback(async () => {
     try {
-      const response = await updateUser(updatedUserData);
+      const token = getToken();
+      if (!token) {
+        console.error("No token available");
+        return;
+      }
+      const response = await fetch(
+        `http://localhost:3000/auth/me`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (!response.ok) {
+        console.error("Failed to fetch user data. Status:", response.status);
+        const responseBody = await response.text();
+        console.error("Response body:", responseBody);
+        return;
+      }
+      const userData = await response.json();
+      console.log("User data:", userData);
+
+      dispatch && dispatch(setUserInfo(userData));
+      setUserData(userData);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  }, [dispatch, getToken]);
+  const { data, error, isLoading } = useGetUserQuery(userid, {
+    queryFn: fetchUserData,
+  });
+  useEffect(() => {
+    if (getToken()) {
+      fetchUserData();
+    }
+  }, [fetchUserData, getToken, userid]);
+  if (isLoading) {
+    return <h1>Loading...</h1>;
+  }
+  if (error) {
+    return <h1>Something went wrong...</h1>;
+  }
+  if (!data) {
+    return <h1>No data available</h1>;
+  }
+
+
+ 
+
+  const HandleUpdateUser = async (updatedUserData) => {
+    try {
+      const response = await updateUserMutation(updatedUserData);
       if (response.data) {
-        setUserData(response.data)
+        setUserData(response.data);
         console.log("User updated successfully:", response.data);
       } else {
         console.error("User update failed:", response.error);
@@ -35,12 +85,12 @@ const Account = () => {
       console.error("User update failed:", error);
     }
   };
-
+//try passing in id the route for delete on backend is undefined insted of the user id!!!!!!!!!
   const handleDeleteUser = async () => {
     try {
-      const response = await deleteUser();
+      const response = await deleteUserMutation();
       if (response.data) {
-        setUserData();
+        setUserData(null); // Reset userData state after deletion
         console.log("User deleted successfully");
       } else {
         console.error("User deletion failed:", response.error);
@@ -49,47 +99,72 @@ const Account = () => {
       console.error("User deletion failed:", error);
     }
   };
-
+  const handleChange = (fieldName, value) => {
+    setUserData(prevData => ({
+      ...prevData,
+      [fieldName]: value
+    }));
+  };
   return (
-    <Accordion>
-      {/* Section for updating/deleting user information */}
-      <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="update-delete-content" id="update-delete-header">
-        Update/Delete User
-      </AccordionSummary>
-      <AccordionDetails>
-        <div>
-          {userData ? (
-            <div>
-              <UpdateUserInfoForm userData={userData} onUpdate={handleUpdateUser} />
-              <Button onClick={handleDeleteUser} variant="contained" color="error">Delete Account</Button>
-            </div>
-          ) : (
-            <p>No user data found.</p>
-          )}
-        </div>
-      </AccordionDetails>
-      
-      {/* Section for displaying cart history */}
-      <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="cart-history-content" id="cart-history-header">
-        Cart History
-      </AccordionSummary>
-      <AccordionDetails>
-        <div>
-          {userData && userData.cartHistory.length > 0 ? (
-            <ul>
-              {userData.cartHistory.map((cart) => (
-                <li key={cart.id}>
-                  Cart ID: {cart.id}, Date: {cart.date}, Total: ${cart.total}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>No cart history found.</p>
-          )}
-        </div>
-      </AccordionDetails>
-    </Accordion>
+    <>
+      <Accordion>
+        {/* Section for updating/deleting user information */}
+        <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="update-delete-content" id="update-delete-header">
+          Update/Delete User
+        </AccordionSummary>
+        <AccordionDetails>
+          <div>
+            <form onSubmit={(e) => { e.preventDefault(); HandleUpdateUser(userData); }}>
+              <TextField
+                required
+                label="First Name"
+                value={userData?.firstName || ''}
+                onChange={(e) => handleChange('firstName', e.target.value)}
+              />
+              <TextField
+                required
+                label="Last Name"
+                value={userData?.lastName || ''}
+                onChange={(e) => handleChange('lastName', e.target.value)}
+              />
+              <TextField
+                required
+                label="Email"
+                value={userData?.email || ''}
+                onChange={(e) => handleChange('email', e.target.value)}
+              />
+              <TextField
+                required
+                label="Address"
+                value={userData?.address || ''}
+                onChange={(e) => handleChange('address', e.target.value)}
+              />
+              {/* Other form fields for updating user information */}
+              <Button type="submit" variant="contained">Update</Button>
+            </form>
+            <Button onClick={handleDeleteUser} variant="contained" color="error">Delete Account</Button>
+          </div>
+        </AccordionDetails>
+        {/* Section for displaying cart history */}
+        <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="cart-history-content" id="cart-history-header">
+          Cart History
+        </AccordionSummary>
+        <AccordionDetails>
+          <div>
+            {/* Render cart history content */}
+          </div>
+        </AccordionDetails>
+      </Accordion>
+    </>
   );
 }
-
 export default Account;
+
+
+
+
+
+
+
+
+
