@@ -1,7 +1,7 @@
 import "./App.css";
 import { Routes, Route } from "react-router-dom";
 import Account from "./components/Account";
-// import AdminDashboard from "./components/AdminDashboard";
+import AdminDashboard from "./components/AdminDashboard";
 import Cart from "./components/Cart";
 import LoginForm from "./components/Login";
 // import NavBar from "./components/NavBar";
@@ -19,9 +19,9 @@ function App() {
   <Routes>
         <Route path = "/" element = {<Products/>} />
 
-        {/* <Route path = "/products/:productid" element = {<SingleProduct/>} /> */}
+        <Route path = "/products/:productid" element = {<SingleProduct/>} />
         <Route path = "/cart" element = {<Cart/>} />
-
+        <Route path = "/adminDashboard" element = {<AdminDashboard/>} />
         <Route path = "/register" element = {<RegistrationForm/>} />
         <Route path = "/Cart" element = {<Cart/>} />
         <Route path = "/login" element = {<LoginForm/>} />
