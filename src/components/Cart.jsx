@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import {
   useGetCartItemsQuery,
@@ -45,23 +46,27 @@ const Cart = () => {
     }
   };
 
+
   const handleUpdateQuantity = async (cartItemId, newQuantity) => {
     if (newQuantity < 1) {
       alert("Quantity must be at least 1");
       return;
     }
     try {
+
       const updated = await updateCartItem({
         id: cartItemId,
         quantity: newQuantity,
       }).unwrap();
       console.log("Update successful", updated);
+
       refetch(); // Refresh the cart items list
     } catch (error) {
       console.error("Failed to update item quantity:", error);
       // Add user feedback for error
     }
   };
+
 
   if (isLoading) return <div>Loading cart...</div>;
   if (isError) return <div>Error loading cart.</div>;
@@ -79,10 +84,12 @@ const Cart = () => {
               <Typography variant="body1">
                 Price: ${item.product.price}
               </Typography>
+
               <Typography variant="body1">Quantity:</Typography>
               <TextField
                 type="number"
                 value={item.quantity}
+
                 onChange={(e) =>
                   handleUpdateQuantity(item.id, parseInt(e.target.value))
                 }
@@ -92,6 +99,7 @@ const Cart = () => {
                 onClick={() => handleRemoveItem(item.id)}
                 aria-label="delete"
               >
+
                 <DeleteIcon />
               </IconButton>
             </CardContent>
@@ -100,14 +108,17 @@ const Cart = () => {
       ) : (
         <Typography variant="body1">Your cart is empty.</Typography>
       )}
+
       <Link to="/checkout" style={{ textDecoration: "none" }}>
         <StyledButton style={{ marginTop: "20px" }}>
           Proceed to Checkout
         </StyledButton>
+
       </Link>
     </div>
   );
 };
+
 
 export default Cart;
 
@@ -142,3 +153,4 @@ export default Cart;
 // };
 
 // export default App;
+

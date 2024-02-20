@@ -1,30 +1,73 @@
-import React, { useState } from "react";
-import { useGetProductsQuery, useCreateCartItemMutation } from "../api/shopApi";
+
+import { useGetProductsQuery, useCreateCartItemMutation, useCreateCartMutation, useDeleteCartMutation, useGetCartsQuery } from "../api/shopApi";
+import {  useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import StyledButton from "../design/StyledButton";
-import { Card, CardContent, Typography, Button, Snackbar } from "@mui/material";
+import { Card } from "@mui/material";
+import CardContent from "@mui/material/CardContent";
+import VirtualizedList from "../design/list";
+import { jwtDecode } from "jwt-decode";
+
 
 const Getallproducts = () => {
-  const { data: products, isLoading, isError, error } = useGetProductsQuery();
-  const [
-    createCartItem,
-    { isLoading: isCreatingCartItem, error: createCartItemError },
-  ] = useCreateCartItemMutation();
+  const { data, isLoading, isError, error } = useGetProductsQuery();
+  const [createCartItem] = useCreateCartItemMutation([]);
+  const [createCart] = useCreateCartMutation();
+  const { data: carts } = useGetCartsQuery();
+  const [deleteCart] = useDeleteCartMutation();
+  const [authToken, setAuthToken] = useState(localStorage.getItem("authToken"));
 
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
+  useEffect(() => {
+   
+    setAuthToken(localStorage.getItem("authToken"));
+  }, [localStorage.getItem("authToken")]);
 
-  const handleCloseSnackbar = () => {
-    setOpenSnackbar(false);
-  };
+  useEffect(() => {
+    const deletePreviousGuestCarts = async () => {
+      try {
+      
+        const previousGuestCarts = carts.filter((cart) => cart.userId === null);
+       
+       
+        await Promise.all(previousGuestCarts.map((cart) => deleteCart(cart.id )));
+        
+        console.log("Previous guest carts deleted successfully!");
+      } catch (error) {
+        console.error("Failed to delete previous guest carts:", error);
+      }
+    };
 
-  // This function or a similar one needs to be defined based on your auth setup
-const isUserLoggedIn = () => {
-  return Boolean(localStorage.getItem('authToken')); // Assuming 'authToken' is stored in localStorage upon login
-};
+    deletePreviousGuestCarts();
+  }, [carts, deleteCart]);
 
-const handleAddToCart = async (productId) => {
-  if (isUserLoggedIn()) {
+  useEffect(() => {
+    const createNewCart = async () => {
+      try {
+        let userId = 1;
+
+        if(authToken) {
+          const decodedToken = jwtDecode(authToken);
+          userId= decodedToken.id;
+          console.log(decodedToken.id)
+        }
+        console.log(userId)
+        const status = "active";
+        const totalAmount = 0.0;
+
+        await createCart({userId, status, totalAmount});
+
+        console.log("New cart created successfully!", );
+       
+      } catch (error) {
+        console.error("Failed to create new cart:", error);
+      }
+    };
+
+    createNewCart();
+  }, [createCart]);
+ 
+  const handleAddtoCart = async (productId) => {
+
     try {
       // Call your createCartItem mutation with the productId
       await createCartItem({ productId, quantity: 1 }).unwrap();
@@ -35,24 +78,11 @@ const handleAddToCart = async (productId) => {
       setSnackbarMessage("Failed to add product to cart");
       setOpenSnackbar(true);
     }
-  } else {
-    // Guest user logic
-    let cart = JSON.parse(localStorage.getItem('cart')) || [];
-    const itemIndex = cart.findIndex(item => item.productId === productId);
-    
-    if (itemIndex > -1) {
-      cart[itemIndex].quantity += 1; // Increment quantity if product exists
-    } else {
-      cart.push({ productId, quantity: 1 }); // Add new item to cart
-    }
 
-    localStorage.setItem('cart', JSON.stringify(cart));
-    setSnackbarMessage("Product added to Cart successfully!");
-    setOpenSnackbar(true);
-  }
-};
+  };
 
-  if (isLoading || isCreatingCartItem) {
+  if (isLoading) {
+
     return <div>Loading...</div>;
   }
 
@@ -60,42 +90,71 @@ const handleAddToCart = async (productId) => {
     return <div>Error fetching products: {error.message}</div>;
   }
 
+  const featuredProduct = data[0];
+  
   return (
-    <div className="productscardcontainer">
-      {products?.map((product) => (
-        <Card key={product.id} className="product-card">
+
+    <div className="product-page-container">
+    <div className="list-container">
+      <VirtualizedList className="virtualized-list"/>
+    </div>
+    <div className="products-container">
+      
+      <div className="featured-product">
+        <Card className="featured-card">
           <CardContent>
-            <Typography variant="h5">{product.productName}</Typography>
+            <h4>Featured Product Of The Day!</h4>
+
             <img
               className="product-img"
-              src={product.image}
-              alt={product.productName}
+              src={featuredProduct.image}
+              alt={featuredProduct.productName}
             />
-            <Link to={`/products/${product.id}`}>
-              <StyledButton component="span">Product Details</StyledButton>
+
+            <h4>{"Price: $" + featuredProduct.price}</h4>
+            <Link to={`/products/${featuredProduct.id}`}>
+              <StyledButton>Product Details</StyledButton>
             </Link>
-            <StyledButton
-              onClick={() => handleAddToCart(product.id)}
-              disabled={isCreatingCartItem}
-            >
+            <StyledButton onClick={() => handleAddtoCart(featuredProduct.id)}>
+
               Add to Cart
             </StyledButton>
+            
           </CardContent>
         </Card>
-      ))}
-      <Snackbar
-        open={openSnackbar}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-        message={snackbarMessage}
-        action={
-          <Button color="secondary" size="small" onClick={handleCloseSnackbar}>
-            UNDO
-          </Button>
-        }
-      />
+
+      </div>
+
+      
+      <div className="product-grid">
+        {data.slice(1).map((product) => (
+          <Card key={product.id} className="product-card">
+            <CardContent>
+              <h4>{product.productName}</h4>
+              <img
+                className="product-img"
+                src={product.image}
+                alt={product.productName}
+              />
+               <h4>{"Price: $" + product.price}</h4>
+              <Link to={`/products/${product.id}`}>
+                <StyledButton>Product Details</StyledButton>
+              </Link>
+              <StyledButton onClick={() => handleAddtoCart(product.id)}>
+                Add to Cart
+              </StyledButton>
+             
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+
     </div>
   );
 };
 
 export default Getallproducts;
+
+
+

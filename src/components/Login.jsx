@@ -1,67 +1,167 @@
-import { useLoginUserMutation } from "../api/shopApi";
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import Avatar from "@mui/material/Avatar";
+import Button from "@mui/material/Button";
+import CssBaseline from "@mui/material/CssBaseline";
+import TextField from "@mui/material/TextField";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Checkbox from "@mui/material/Checkbox";
+import Link from "@mui/material/Link";
+import Grid from "@mui/material/Grid";
+import Box from "@mui/material/Box";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import Typography from "@mui/material/Typography";
+import Container from "@mui/material/Container";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { useLoginUserMutation, useCreateCartMutation } from "../api/shopApi";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+// import Account from "./Account";
+import StyledButton from "../design/StyledButton";
+import { jwtDecode } from "jwt-decode";
 
-
-const LoginForm = () => {
-  const navigate = useNavigate();
-  const [form, setForm] = useState({ email: "", password: "" });
-  const [message, setMessage] = useState("");
-  const [login, {isLoading, isError}] = useLoginUserMutation();
-
-  const formChange = (e) => {
-    setForm({...form, [e.target.name]: e.target.value})
-  };
-
-  const loginForm = async (e) => {
-    e.preventDefault();
-    try {
-    const result = await login(form);
-    if (result.error) {
-      setMessage(result.error.data.message);
+const defaultTheme = createTheme({
+  palette: {
+    mode: "dark",
+  },
+});
+const getUserIdFromToken = (token) => {
+  try {
+    const decodedToken = jwtDecode(token);
+    console.log(token)
+    if (decodedToken && decodedToken.id) {
+      return decodedToken.id;
     } else {
-      setMessage("");
-      navigate("/account");
-      }
-    } catch (error) {
-      console.error('An unexpected error occured:', error);
+      throw new Error("Invalid token structure");
     }
-  };
-
-  return (
-    <>
-      {isLoading && <p>Loading...</p>}
-
-      <form onSubmit={loginForm} className="form">
-          <h1>Log into BookBuddy</h1>
-          <div>
-            <input
-              type="email"
-              placeholder="Email"
-              name="email"
-              onChange={formChange}
-            />
-          </div>
-          <div>
-            <input
-              type="password"
-              className="form-control"
-              id="exampleInputPassword1"
-              placeholder="Password"
-              name="password"
-              onChange={formChange}
-            />
-          </div>
-        <button type="submit">
-          {isLoading ? 'Logging in...' : 'Login'}
-        </button>
-        {isError && <p className="text-danger">{message}</p>}
-        <p>
-          No account? <Link to="/register">Sign Up</Link>
-        </p>
-      </form>
-    </>
-  );
+  } catch (error) {
+    console.error("Error decoding token:", error);
+    return null;
+  }
 };
 
-export default LoginForm;
+export default function Login() {
+  const navigate = useNavigate();
+  const [loginUser] = useLoginUserMutation();
+  const [createCart] = useCreateCartMutation();
+  const [authToken, setAuthToken] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [formData, setFormData] = useState({ email: "", password: "" });
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData({ ...formData, [name]: value });
+  };
+  const handleLoginSuccess = async (token) => {
+    localStorage.setItem("authToken", token);
+    setAuthToken(token);
+    setIsLoggedIn(true);
+
+//     try {
+//       const userId = 3; 
+//       const status = "active";
+//       const totalAmount = 0.0;
+// console.log(userId)
+//       const response = await createCart({userId, status, totalAmount});
+//       console.log("Cart created successfully:", response.data);
+//     } catch (error) {
+//       console.error("Failed to create cart:", error);
+//     }
+  };
+  
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    try {
+      const response = await loginUser(formData);
+      const token = response.data.token;
+      handleLoginSuccess(token);
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
+  };
+  useEffect(() => {
+    if (isLoggedIn) {
+      localStorage.setItem("loginStatus", isLoggedIn);
+      navigate("/");
+    } else {
+      localStorage.setItem("loginStatus", isLoggedIn);
+    }
+  }, [isLoggedIn]);
+  return (
+    <ThemeProvider theme={defaultTheme}>
+      <Container component="main" maxWidth="xs">
+        <CssBaseline />
+        <Box
+          sx={{
+            marginTop: 8,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
+            <LockOutlinedIcon />
+          </Avatar>
+          <Typography component="h1" variant="h5">
+            Sign in
+          </Typography>
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            noValidate
+            sx={{ mt: 1 }}
+          >
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="email"
+              label="Email Address"
+              name="email"
+              autoComplete="email"
+              autoFocus
+              value={formData.email}
+              onChange={handleChange}
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="password"
+              label="Password"
+              type="password"
+              id="password"
+              autoComplete="current-password"
+              value={formData.password}
+              onChange={handleChange}
+            />
+            <FormControlLabel
+              control={<Checkbox value="remember" color="primary" />}
+              label="Remember me"
+            />
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
+            >
+              Sign In
+            </Button>
+            {isLoggedIn && localStorage.getItem("authToken")}
+            <Grid container>
+              <Grid item xs>
+                <Link href="#" variant="body2">
+                  Forgot password?
+                </Link>
+              </Grid>
+              <Grid item>
+              <Link to="users/register">
+                <StyledButton>Sign Up Here!</StyledButton>
+              </Link>
+              </Grid>
+            </Grid>
+          </Box>
+        </Box>
+      </Container>
+    </ThemeProvider>
+  );
+}

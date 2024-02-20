@@ -19,6 +19,14 @@ export const GetUserData = createAsyncThunk(
       }
     }
   );
+
+  export const LogoutUser = () => (dispatch) => {
+    // Clear the authentication token from localStorage
+    localStorage.removeItem("authToken");
+    // Clear user data from the Redux store
+    dispatch(setUserInfo(null));
+  };
+  
   
   const GetUserSlice = createSlice({
     name: "user",
@@ -35,6 +43,7 @@ export const GetUserData = createAsyncThunk(
     },
   });
   
+  // eslint-disable-next-line react-refresh/only-export-components
   export const { setUserInfo } = GetUserSlice.actions;
   export default GetUserSlice.reducer;
   
