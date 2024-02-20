@@ -1,3 +1,4 @@
+
 import { Link } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
@@ -5,6 +6,7 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { useSelector, useDispatch } from 'react-redux';
 import { LogoutUser } from '../slice/userSlice';
+
 const Navbar = () => {
   const { token } = useSelector((state) => state.user);
   const dispatch = useDispatch();
@@ -35,6 +37,7 @@ const Navbar = () => {
         </Button>
         
           <Button color="inherit" component={Link} to="/Account">
+
           Account
         </Button>
 
@@ -43,6 +46,7 @@ const Navbar = () => {
             </Button>
         
         
+
       </Toolbar>
     </AppBar>
   );

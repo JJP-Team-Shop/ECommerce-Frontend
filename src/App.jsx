@@ -18,8 +18,10 @@ function App() {
   <div>
   <Routes>
         <Route path = "/" element = {<Products/>} />
-        <Route path = "/products/:productid" element = {<SingleProduct/>} />
-        {/* <Route path = "/cart" element = {<Cart/>} />  */}
+
+        {/* <Route path = "/products/:productid" element = {<SingleProduct/>} /> */}
+        <Route path = "/cart" element = {<Cart/>} />
+
         <Route path = "/register" element = {<RegistrationForm/>} />
         <Route path = "/Cart" element = {<Cart/>} />
         <Route path = "/login" element = {<LoginForm/>} />
