@@ -102,9 +102,9 @@ export const shopApi = createApi({
       }),
     }),
     updateCartItem: builder.mutation({
-      query: (cartItemsData) => ({
-        url: (id) => `/api/cartitems/${id}`,
-        method: "PATCH",
+      query: ({ id, ...cartItemsData }) => ({
+        url: `/api/cartitems/${id}`,
+        method: "PUT",
         body: cartItemsData,
       }),
     }),

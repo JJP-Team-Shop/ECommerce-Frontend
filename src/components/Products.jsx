@@ -1,63 +1,101 @@
+import React, { useState } from "react";
 import { useGetProductsQuery, useCreateCartItemMutation } from "../api/shopApi";
-// import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import StyledButton from "../design/StyledButton";
-import { Card } from "@mui/material";
-import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
+import { Card, CardContent, Typography, Button, Snackbar } from "@mui/material";
 
 const Getallproducts = () => {
-  const { data, isLoading, isError, error } = useGetProductsQuery();
-  const [createCartItem] = useCreateCartItemMutation([]);
+  const { data: products, isLoading, isError, error } = useGetProductsQuery();
+  const [
+    createCartItem,
+    { isLoading: isCreatingCartItem, error: createCartItemError },
+  ] = useCreateCartItemMutation();
 
-  const handleAddtoCart = async (productId) => {
-    try {
-      await createCartItem({ productId });
-      alert("Product added to Cart successfully!");
-    } catch (error) {
-      alert("Failed to add product to cart");
-    }
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
   };
-  console.log("data:", data);
-  if (isLoading) {
+
+  // This function or a similar one needs to be defined based on your auth setup
+const isUserLoggedIn = () => {
+  return Boolean(localStorage.getItem('authToken')); // Assuming 'authToken' is stored in localStorage upon login
+};
+
+const handleAddToCart = async (productId) => {
+  if (isUserLoggedIn()) {
+    try {
+      // Call your createCartItem mutation with the productId
+      await createCartItem({ productId, quantity: 1 }).unwrap();
+      setSnackbarMessage("Product added to Cart successfully!");
+      setOpenSnackbar(true);
+    } catch (err) {
+      console.error("Failed to add product to cart", err);
+      setSnackbarMessage("Failed to add product to cart");
+      setOpenSnackbar(true);
+    }
+  } else {
+    // Guest user logic
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const itemIndex = cart.findIndex(item => item.productId === productId);
+    
+    if (itemIndex > -1) {
+      cart[itemIndex].quantity += 1; // Increment quantity if product exists
+    } else {
+      cart.push({ productId, quantity: 1 }); // Add new item to cart
+    }
+
+    localStorage.setItem('cart', JSON.stringify(cart));
+    setSnackbarMessage("Product added to Cart successfully!");
+    setOpenSnackbar(true);
+  }
+};
+
+  if (isLoading || isCreatingCartItem) {
     return <div>Loading...</div>;
   }
 
   if (isError) {
-    return <div>Error: {error.message}</div>;
+    return <div>Error fetching products: {error.message}</div>;
   }
 
   return (
     <div className="productscardcontainer">
-      {data.map((product) => (
+      {products?.map((product) => (
         <Card key={product.id} className="product-card">
           <CardContent>
-            <h1>{product.productName}</h1>
+            <Typography variant="h5">{product.productName}</Typography>
             <img
               className="product-img"
               src={product.image}
               alt={product.productName}
             />
-
             <Link to={`/products/${product.id}`}>
-              <StyledButton>Product Details</StyledButton>
+              <StyledButton component="span">Product Details</StyledButton>
             </Link>
-
-            <StyledButton onClick={() => handleAddtoCart(product.id)}>
+            <StyledButton
+              onClick={() => handleAddToCart(product.id)}
+              disabled={isCreatingCartItem}
+            >
               Add to Cart
             </StyledButton>
           </CardContent>
         </Card>
       ))}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        message={snackbarMessage}
+        action={
+          <Button color="secondary" size="small" onClick={handleCloseSnackbar}>
+            UNDO
+          </Button>
+        }
+      />
     </div>
   );
 };
 
 export default Getallproducts;
-
-// <div key={product.id}>
-// <h1>{product.productName}</h1>
-
-// <Link to={`/products/${product.id}`}>View Details</Link>
-// <button onClick={() => handleAddtoCart(product.id)}>Add to Cart</button>
-// </div>
