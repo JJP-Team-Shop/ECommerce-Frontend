@@ -30,7 +30,7 @@ export const GetUserData = createAsyncThunk(
   
   const GetUserSlice = createSlice({
     name: "user",
-    initialState: [],
+    initialState: {token: null},
     reducers: {
       setUserInfo: (state, action) => {
         return action.payload;

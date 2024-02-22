@@ -16,7 +16,13 @@ export const shopApi = createApi({
   endpoints: (builder) => ({
     //products
 
-    getProducts: builder.query({ query: () => "/api/Products" }),
+    getProducts: builder.query({
+      query: () => ({
+        url: "/api/Products",
+        method: "GET",
+      }),
+    }),
+
     getProduct: builder.query({ query: (id) => `/api/Products/${id}` }),
     updateProduct: builder.mutation({
       query: (productData) => ({
@@ -58,7 +64,7 @@ export const shopApi = createApi({
       query: (userData) => ({
         url: "/auth/me",
         method: "GET",
-        body: userData
+        body: userData,
       }),
     }),
     updateUser: builder.mutation({

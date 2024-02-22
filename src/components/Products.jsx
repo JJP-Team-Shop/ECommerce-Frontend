@@ -1,6 +1,5 @@
-
-import { useGetProductsQuery, useCreateCartItemMutation, useCreateCartMutation, useDeleteCartMutation, useGetCartsQuery } from "../api/shopApi";
-import {  useEffect, useState } from "react";
+import { useGetProductsQuery, useCreateCartItemMutation, useGetCartsQuery, useUpdateCartItemMutation, useGetCartItemsQuery } from "../api/shopApi";
+import {  useState } from "react";
 import { Link } from "react-router-dom";
 import StyledButton from "../design/StyledButton";
 import { Card, Snackbar, Button } from "@mui/material";
@@ -11,103 +10,63 @@ import { jwtDecode } from "jwt-decode";
 
 const Getallproducts = () => {
   const { data, isLoading, isError, error } = useGetProductsQuery();
-  const [createCart] = useCreateCartMutation();
+  
+
   const { data: carts } = useGetCartsQuery();
-  const [deleteCart] = useDeleteCartMutation();
-  const [authToken, setAuthToken] = useState(localStorage.getItem("authToken"));
-  const [
-    createCartItem,
-    { isLoading: isCreatingCartItem, error: createCartItemError },
-  ] = useCreateCartItemMutation();
+  // const [authToken, setAuthToken] = useState(localStorage.getItem("authToken"));
+  const [createCartItem] = useCreateCartItemMutation();
+  const [updateCartItem] = useUpdateCartItemMutation();
+  const {data: cartItems} = useGetCartItemsQuery();
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  // const authTokenFromStorage = localStorage.getItem("authToken");
+  
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false);
   };
-  const isUserLoggedIn = () => {
-    return Boolean(localStorage.getItem('authToken')); 
-  };
-
-  useEffect(() => {
-   
-    setAuthToken(localStorage.getItem("authToken"));
-  }, [localStorage.getItem("authToken")]);
-
-  useEffect(() => {
-    const deletePreviousGuestCarts = async () => {
-      try {
-      
-        const previousGuestCarts = carts.filter((cart) => cart.userId === null);
-       
-       
-        await Promise.all(previousGuestCarts.map((cart) => deleteCart(cart.id )));
-        
-        console.log("Previous guest carts deleted successfully!");
-      } catch (error) {
-        console.error("Failed to delete previous guest carts:", error);
-      }
-    };
-
-    deletePreviousGuestCarts();
-  }, [carts, deleteCart]);
-
-  useEffect(() => {
-    const createNewCart = async () => {
-      try {
-        let userId = 1;
-
-        if(authToken) {
-          const decodedToken = jwtDecode(authToken);
-          userId= decodedToken.id;
-          console.log(decodedToken.id)
-        }
-        console.log(userId)
-        const status = "active";
-        const totalAmount = 0.0;
-
-        await createCart({userId, status, totalAmount});
-
-        console.log("New cart created successfully!", );
-       
-      } catch (error) {
-        console.error("Failed to create new cart:", error);
-      }
-    };
-
-    createNewCart();
-  }, [createCart]);
- 
-
+  
   const handleAddToCart = async (productId) => {
-    if (isUserLoggedIn()) {
+    
+    const authTokenFromStorage = localStorage.getItem("authToken");
+    const isLoggedIn = Boolean(authTokenFromStorage);
+
+    if (isLoggedIn) {
       try {
-        // Call your createCartItem mutation with the productId
-        await createCartItem({ productId, quantity: 1 }).unwrap();
-        setSnackbarMessage("Product added to Cart successfully!");
-        setOpenSnackbar(true);
+        const decodedToken = jwtDecode(authTokenFromStorage);
+        const userId = decodedToken.id;     
+        const userCart = carts.find(cart => cart.userId === userId);
+        const cartId = userCart ? userCart.id : null;
+      
+        if (cartItems && cartItems.length > 0) {
+          const existingCartItem = cartItems.find(
+            (item) => item.productId === productId && item.cartId === cartId
+          );
+      
+          if (existingCartItem) {
+            await updateCartItem({ id: existingCartItem.id, quantity: existingCartItem.quantity + 1 }).unwrap();
+          }else {
+            await createCartItem({ cartId, productId, userId, quantity: 1 }).unwrap();
+          }
+      
+          setSnackbarMessage("Product added to Cart successfully!");
+          setOpenSnackbar(true);
+        }
       } catch (err) {
         console.error("Failed to add product to cart", err);
         setSnackbarMessage("Failed to add product to cart");
         setOpenSnackbar(true);
       }
-    } else {
-      // Guest user logic
-      let cart = JSON.parse(localStorage.getItem('cart')) || [];
-      const itemIndex = cart.findIndex(item => item.productId === productId);
-      if (itemIndex > -1) {
-        cart[itemIndex].quantity += 1; // Increment quantity if product exists
-      } else {
-        cart.push({ productId, quantity: 1 }); // Add new item to cart
+    }  
+      else {
+        setSnackbarMessage("Please login to add items to the cart.")
+        setOpenSnackbar(true);
       }
-      localStorage.setItem('cart', JSON.stringify(cart));
-      setSnackbarMessage("Product added to Cart successfully!");
-      setOpenSnackbar(true);
 
-    }
+    
 
   };
 
-    if (isLoading || isCreatingCartItem) {
+    if (isLoading) {
       return <div>Loading...</div>;
     }
     if (isError) {
@@ -141,10 +100,10 @@ const Getallproducts = () => {
               <StyledButton>Product Details</StyledButton>
             </Link>
 
-            <StyledButton onClick={() => handleAddToCart(featuredProduct.id)}>
+             <StyledButton onClick={() => handleAddToCart(featuredProduct.id)}>
 
               Add to Cart
-            </StyledButton>
+            </StyledButton> 
             
           </CardContent>
         </Card>
@@ -166,14 +125,14 @@ const Getallproducts = () => {
               <Link to={`/products/${product.id}`}>
                 <StyledButton>Product Details</StyledButton>
               </Link>
-              <StyledButton onClick={() => handleAddToCart(product.id)}>
+               <StyledButton onClick={() => handleAddToCart(product.id)}>
                 Add to Cart
-              </StyledButton>
+              </StyledButton> 
              
             </CardContent>
           </Card>
         ))}
-         <Snackbar
+          <Snackbar
         open={openSnackbar}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
@@ -183,7 +142,7 @@ const Getallproducts = () => {
             UNDO
           </Button>
         }
-      />
+      /> 
       </div>
     </div>
 

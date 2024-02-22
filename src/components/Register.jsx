@@ -13,7 +13,7 @@ import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {useRegisterUserMutation} from "../api/shopApi"
+import {useRegisterUserMutation, useCreateCartMutation} from "../api/shopApi"
 
 
 const defaultTheme = createTheme({
@@ -25,6 +25,7 @@ const defaultTheme = createTheme({
 export default function Register() {
   const navigate = useNavigate();
   const [addNewUser] = useRegisterUserMutation();
+  const [createCart] = useCreateCartMutation();
   const [formData, setFormData] = useState({
 
     firstName: "",
@@ -48,22 +49,33 @@ export default function Register() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    let response;
     try {
-      const response = await addNewUser(formData);
+      response = await addNewUser(formData);
 
       if (response.data) {
-        console.log(
-          "User registration successful."
-        );
-        navigate("/login");
+        console.log("User registration successful.");
+       
       } else {
-        console.error(
-          "User registration failed"
-
-        );
+        console.error("User registration failed");
       }
     } catch (error) {
       console.error("User registration failed:", error);
+    }
+
+    try {
+      const userId = response.data.user.id; 
+      const status = "active";
+      const totalAmount = 0.0;
+      console.log(response)
+
+
+      const cartResponse = await createCart({userId, status, totalAmount});
+
+      console.log("Cart created successfully:", cartResponse.data);
+      navigate("/login");
+    } catch (error) {
+      console.error("Failed to create cart:", error);
     }
   };
 
