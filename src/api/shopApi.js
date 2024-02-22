@@ -63,8 +63,8 @@ export const shopApi = createApi({
     }),
     updateUser: builder.mutation({
       query: (userData) => ({
-        url: (id) => `/api/users/${id}`,
-        method: "PATCH",
+        url: `/api/users/${id}`,
+        method: "PUT",
         body: userData,
       }),
     }),
