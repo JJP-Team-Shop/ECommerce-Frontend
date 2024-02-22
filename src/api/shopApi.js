@@ -37,6 +37,13 @@ export const shopApi = createApi({
         method: "DELETE",
       }),
     }),
+    registerProduct: builder.mutation({
+      query: (productData) => ({
+        url: "api/products/",
+        method: "POST",
+        body: productData,
+      }),
+    }),
 
     //users
 
@@ -68,9 +75,9 @@ export const shopApi = createApi({
       }),
     }),
     updateUser: builder.mutation({
-      query: (userData) => ({
-        url: (id) => `/api/users/${id}`,
-        method: "PATCH",
+      query: (id, userData) => ({
+        url: `/api/users/${id}`,
+        method: "PUT",
         body: userData,
       }),
     }),
@@ -158,6 +165,7 @@ export const {
   useGetProductQuery,
   useUpdateProductMutation,
   useDeleteProductMutation,
+  useRegisterProductMutation,
   useGetUsersQuery,
   useGetUserQuery,
   useRegisterUserMutation,

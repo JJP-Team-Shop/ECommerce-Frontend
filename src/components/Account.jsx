@@ -16,8 +16,19 @@ const Account = () => {
   const dispatch = useDispatch();
   const { userid } = useParams();
   const [userData, setUserData] = useState(null);
+  const [formData, setFormData] = useState({
+    id: 123, // Replace with the ID of the user to update
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    address: "",
+    isAdmin: false,
+  });
+  
   const [deleteUserMutation] = useDeleteUserMutation();
   const [updateUserMutation] = useUpdateUserMutation();
+  
   const getToken = useCallback(() => {
     return localStorage.getItem("authToken");
   }, []);
@@ -44,7 +55,6 @@ const Account = () => {
       }
       const userData = await response.json();
       console.log("User data:", userData);
-
       dispatch && dispatch(setUserInfo(userData));
       setUserData(userData);
     } catch (error) {
@@ -69,12 +79,9 @@ const Account = () => {
     return <h1>No data available</h1>;
   }
 
-
- 
-
-  const HandleUpdateUser = async (updatedUserData) => {
+  const HandleUpdateUser = async () => {
     try {
-      const response = await updateUserMutation(updatedUserData);
+      const response = await updateUserMutation(userid, formData);
       if (response.data) {
         setUserData(response.data);
         console.log("User updated successfully:", response.data);
@@ -82,13 +89,18 @@ const Account = () => {
         console.error("User update failed:", response.error);
       }
     } catch (error) {
-      console.error("User update failed:", error);
+      if (error.status === 404) {
+        console.error("User not found. Please check the user ID.");
+      } else {
+        console.error("User update failed:", error);
+      }
     }
   };
+  
 //try passing in id the route for delete on backend is undefined insted of the user id!!!!!!!!!
-  const handleDeleteUser = async () => {
+  const handleDeleteUser = async (userId) => {
     try {
-      const response = await deleteUserMutation();
+      const response = await deleteUserMutation(userId);
       if (response.data) {
         setUserData(null); // Reset userData state after deletion
         console.log("User deleted successfully");
@@ -100,7 +112,7 @@ const Account = () => {
     }
   };
   const handleChange = (fieldName, value) => {
-    setUserData(prevData => ({
+    setFormData(prevData => ({
       ...prevData,
       [fieldName]: value
     }));
@@ -114,7 +126,7 @@ const Account = () => {
         </AccordionSummary>
         <AccordionDetails>
           <div>
-            <form onSubmit={(e) => { e.preventDefault(); HandleUpdateUser(userData); }}>
+            <form onSubmit={(e) => { e.preventDefault(); HandleUpdateUser(); }}>
               <TextField
                 required
                 label="First Name"
@@ -135,14 +147,20 @@ const Account = () => {
               />
               <TextField
                 required
+                label="Password"
+                value={userData?.password || ''}
+                onChange={(e) => handleChange('password', e.target.value)}
+              />
+              <TextField
+                required
                 label="Address"
                 value={userData?.address || ''}
                 onChange={(e) => handleChange('address', e.target.value)}
               />
               {/* Other form fields for updating user information */}
-              <Button type="submit" variant="contained">Update</Button>
+              <Button onClick={() => HandleUpdateUser(userData.id)} type="submit" variant="contained">Update</Button>
             </form>
-            <Button onClick={handleDeleteUser} variant="contained" color="error">Delete Account</Button>
+            <Button onClick={() => handleDeleteUser(userData.id)} variant="contained" color="error">Delete Account</Button>
           </div>
         </AccordionDetails>
         {/* Section for displaying cart history */}
@@ -159,12 +177,3 @@ const Account = () => {
   );
 }
 export default Account;
-
-
-
-
-
-
-
-
-

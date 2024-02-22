@@ -111,3 +111,39 @@ body {
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
   }
 }
+
+/* Admin DashBoard */
+.admin-dashboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 50px; /* Adjust as needed */
+}
+
+.admin-dashboard h1 {
+  margin-bottom: 20px; /* Adjust as needed */
+}
+
+.product-form-container {
+  width: 100%;
+  max-width: 400px; /* Adjust as needed */
+  margin-bottom: 50px; /* Adjust as needed */
+}
+
+.product-form-container .MuiFormControl-root {
+  width: 100%;
+}
+
+.product-form-container .MuiTextField-root {
+  margin-bottom: 15px; /* Adjust as needed */
+}
+
+.data-grid-container {
+  width: 100%;
+  max-width: 800px; /* Adjust as needed */
+}
+
+.data-grid-container .MuiDataGrid-root {
+  height: 300px; /* Adjust as needed */
+  width: 100%;
+}

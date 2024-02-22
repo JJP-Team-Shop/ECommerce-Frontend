@@ -7,17 +7,20 @@ import { useDispatch } from "react-redux";
 import { LogoutUser } from "../slice/userSlice";
 import { useNavigate } from "react-router-dom";
 
+
+
 const Navbar = () => {
   const token = localStorage.getItem("authToken");
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const handleLogout = () => {
+
     
+
     localStorage.removeItem("authToken");
     dispatch(LogoutUser());
     navigate("/");
   };
-
   return (
     <AppBar
       position="static"
@@ -30,12 +33,14 @@ const Navbar = () => {
         <Button color="inherit" component={Link} to="/">
           Home
         </Button>
+
         
         {token ? (
           <>
           <Button color="inherit" component={Link} to="/Cart">
           Cart
         </Button>
+
             <Button color="inherit" component={Link} to="/Account">
               Account
             </Button>
@@ -57,5 +62,4 @@ const Navbar = () => {
     </AppBar>
   );
 };
-
 export default Navbar;
