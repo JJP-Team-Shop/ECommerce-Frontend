@@ -1,35 +1,16 @@
-
-import React, { useState, useEffect } from "react";
-import {
-  useGetCartItemsQuery,
-  useDeleteCartItemMutation,
-  useUpdateCartItemMutation,
-} from "../api/shopApi";
+import  { useState, useEffect } from "react";
+import {useGetCartItemsQuery, useDeleteCartItemMutation, useUpdateCartItemMutation,} from "../api/shopApi";
 import { Link } from "react-router-dom";
 import StyledButton from "../design/StyledButton";
-import {
-  Card,
-  CardContent,
-  Typography,
-  IconButton,
-  TextField,
-  Button,
-} from "@mui/material";
+import { Card, CardContent, Typography, IconButton, TextField, Button} from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 const Cart = () => {
-  const {
-    data: cartItems,
-    isLoading,
-    isError,
-    refetch,
-  } = useGetCartItemsQuery();
-  const [deleteCartItem, { isLoading: isDeleting }] =
-    useDeleteCartItemMutation();
-  const [updateCartItem, { isLoading: isUpdating }] =
-    useUpdateCartItemMutation();
+  const {data: cartItems, isLoading, isError, refetch} = useGetCartItemsQuery();
+  const [deleteCartItem, { isLoading: isDeleting }] =useDeleteCartItemMutation();
+  const [updateCartItem, { isLoading: isUpdating }] =useUpdateCartItemMutation();
 
-  // Log cartItems to inspect the structure
+
   useEffect(() => {
     console.log("Fetched cartItems:", cartItems);
   }, [cartItems]);
@@ -37,12 +18,12 @@ const Cart = () => {
   const handleRemoveItem = async (cartItemId) => {
     try {
       await deleteCartItem(cartItemId).unwrap();
-      refetch(); // Refetch cart items after successful deletion
-      alert("Item removed successfully"); // Consider replacing with a more user-friendly notification
-      // Optionally, refetch or update local state to reflect the changes
+      refetch();
+      alert("Item removed successfully"); 
+     
     } catch (error) {
       console.error("Failed to remove item from cart:", error);
-      alert("Failed to remove item"); // Consider a more user-friendly error handling
+      alert("Failed to remove item"); 
     }
   };
 
@@ -60,10 +41,10 @@ const Cart = () => {
       }).unwrap();
       console.log("Update successful", updated);
 
-      refetch(); // Refresh the cart items list
+      refetch(); 
     } catch (error) {
       console.error("Failed to update item quantity:", error);
-      // Add user feedback for error
+      
     }
   };
 
@@ -122,36 +103,4 @@ const Cart = () => {
 
 
 export default Cart;
-
-// App.js
-// import React, { useState } from 'react';
-// import Product from './Product';
-// import Cart from './Cart';
-
-// const App = () => {
-//   const [cartItems, setCartItems] = useState([]);
-//   const products = [
-//     { id: 1, name: 'Product 1', price: 10.99 },
-//     { id: 2, name: 'Product 2', price: 20.99 },
-//     // Add more products as needed
-//   ];
-
-//   const addToCart = (product) => {
-//     setCartItems([...cartItems, product]);
-//   };
-
-//   return (
-//     <div>
-//       <h1>React Shopping App</h1>
-//       <div>
-//         {products.map(product => (
-//           <Product key={product.id} product={product} onAddToCart={addToCart} />
-//         ))}
-//       </div>
-//       <Cart cartItems={cartItems} />
-//     </div>
-//   );
-// };
-
-// export default App;
 

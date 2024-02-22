@@ -6,12 +6,17 @@ import Button from "@mui/material/Button";
 import { useDispatch } from "react-redux";
 import { LogoutUser } from "../slice/userSlice";
 import { useNavigate } from "react-router-dom";
+
+
+
 const Navbar = () => {
   const token = localStorage.getItem("authToken");
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const handleLogout = () => {
-    // Clear the token from localStorage and from the Redux store
+
+    
+
     localStorage.removeItem("authToken");
     dispatch(LogoutUser());
     navigate("/");
@@ -28,11 +33,14 @@ const Navbar = () => {
         <Button color="inherit" component={Link} to="/">
           Home
         </Button>
-        <Button color="inherit" component={Link} to="/Cart">
-          Cart
-        </Button>
+
+        
         {token ? (
           <>
+          <Button color="inherit" component={Link} to="/Cart">
+          Cart
+        </Button>
+
             <Button color="inherit" component={Link} to="/Account">
               Account
             </Button>
