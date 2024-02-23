@@ -38,10 +38,11 @@ export default function Register() {
 
 
   const handleChange = (event) => {
-    const { name, value } = event.target;
+    const { name, value, checked } = event.target;
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
+      [name]: name === "isAdmin" ? checked : value,
     }));
   };
 
@@ -170,13 +171,11 @@ export default function Register() {
                 />
               </Grid>
               <Grid item xs={12}>
-                <FormControlLabel
-
-                  control={<Checkbox value="allowExtraEmails" color="primary" />}
-
-                  label="I want to receive inspiration, marketing promotions and updates via email."
-                />
-              </Grid>
+  <FormControlLabel
+    control={<Checkbox checked={formData.isAdmin} onChange={handleChange} name="isAdmin" />}
+    label="Register as Admin"
+  />
+</Grid>
             </Grid>
             <Button
               type="submit"
