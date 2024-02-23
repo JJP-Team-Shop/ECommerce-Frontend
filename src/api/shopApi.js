@@ -68,10 +68,9 @@ export const shopApi = createApi({
       }),
     }),
     getUser: builder.query({
-      query: (userData) => ({
+      query: () => ({
         url: "/auth/me",
         method: "GET",
-        body: userData,
       }),
     }),
     updateUser: builder.mutation({

@@ -6,21 +6,34 @@ import Button from "@mui/material/Button";
 import { useDispatch } from "react-redux";
 import { LogoutUser } from "../slice/userSlice";
 import { useNavigate } from "react-router-dom";
-
-
+import { useSelector } from "react-redux";
+import { useGetUserQuery } from "../api/shopApi";
+import { jwtDecode } from "jwt-decode";
 
 const Navbar = () => {
   const token = localStorage.getItem("authToken");
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const decodedToken = token ? jwtDecode(token) : null;
+  const userId = decodedToken ? decodedToken.id : null;
+
+  const { data: userData } = useGetUserQuery(userId);
+  // const user = useSelector((state) => state.user);
+  // console.log(data);
+  const isAdmin = userData && userData.isAdmin;
+  console.log(userData);
+  console.log(token);
   const handleLogout = () => {
-
-    
-
     localStorage.removeItem("authToken");
     dispatch(LogoutUser());
     navigate("/");
   };
+  const handleCartClick = () => {
+    navigate("/Cart");
+    window.location.reload();
+  };
+
   return (
     <AppBar
       position="static"
@@ -33,20 +46,23 @@ const Navbar = () => {
         <Button color="inherit" component={Link} to="/">
           Home
         </Button>
-
-        
         {token ? (
           <>
-          <Button color="inherit" component={Link} to="/Cart">
-          Cart
-        </Button>
-
+            <Button color="inherit" onClick={handleCartClick}>
+              Cart
+            </Button>
             <Button color="inherit" component={Link} to="/Account">
               Account
             </Button>
             <Button color="inherit" onClick={handleLogout}>
               Logout
             </Button>
+
+            {isAdmin && (
+              <Button color="inherit" component={Link} to="/AdminDashboard">
+                Admin Dashboard
+              </Button>
+            )}
           </>
         ) : (
           <>
